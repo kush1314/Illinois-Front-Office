@@ -215,11 +215,32 @@ def players(
 ) -> dict[str, object]:
     data = get_players_enriched()
     board = data.copy()
+
+    # Merge Illinois roster players not already in the scraped pool
+    roster = get_illinois_roster()
+    existing_names = set(board["player_name"].str.lower())
+    missing = roster[~roster["player_name"].str.lower().isin(existing_names)].copy()
+    if not missing.empty:
+        missing["school"] = "Illinois"
+        missing["conference"] = "Big Ten"
+        # Normalize column names to match players schema
+        rename_map = {"class_year": "class", "height_in": "height_inches", "three_pt_pct": "three_pt_pct", "ft_pct": "ft_pct"}
+        missing = missing.rename(columns=rename_map)
+        # Fill in missing computed columns with neutral defaults
+        for col in board.columns:
+            if col not in missing.columns:
+                missing[col] = 0.0
+        board = pd.concat([board, missing[board.columns]], ignore_index=True)
+
     if position:
         board = board[board["position"] == position]
     if conference:
         board = board[board["conference"] == conference]
-    board = board.sort_values("hidden_gem_score", ascending=False).head(limit)
+    # Keep Illinois players visible — sort but don't let them get cut off
+    illinois_mask = board["school"].str.lower().str.contains("illinois", na=False)
+    illinois_rows = board[illinois_mask]
+    other_rows = board[~illinois_mask].sort_values("hidden_gem_score", ascending=False)
+    board = pd.concat([illinois_rows, other_rows], ignore_index=True).head(limit)
     return {"items": board.to_dict("records"), "count": len(board), "data_source": get_meta("players")}
 
 
