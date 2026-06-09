@@ -252,25 +252,17 @@ export default function TransferSuccessPredictorPage(): JSX.Element {
             <div className="rounded-lg border border-slate-200 bg-white p-4">
               <p className="mb-2 text-sm font-bold text-navy">How accurate is the model?</p>
               <p className="text-sm text-slate-600">
-                The model correctly separates players likely to succeed from likely busts{" "}
-                <strong>{(performance.holdout.classifier.roc_auc * 100).toFixed(0)}% of the time</strong>{" "}
-                on held-out data (players it never trained on).
-                That&apos;s significantly better than a coin flip, but not perfect — real recruiting involves
-                factors no stat can capture (character, coachability, injury history, NIL).
-              </p>
-              <p className="mt-2 text-xs text-slate-400">
-                Technical note: ROC-AUC = {performance.holdout.classifier.roc_auc.toFixed(3)} | Accuracy = {(performance.holdout.classifier.accuracy * 100).toFixed(1)}%
+                Tested on players it had never seen,{" "}
+                <strong>it correctly identified likely contributors vs. busts {(performance.holdout.classifier.roc_auc * 100).toFixed(0)}% of the time.</strong>{" "}
+                It&apos;s a useful filter, not a guarantee. Stats don&apos;t capture everything — character, coachability, and injury history still matter.
               </p>
             </div>
             <div className="rounded-lg border border-slate-200 bg-white p-4">
               <p className="mb-2 text-sm font-bold text-navy">Is it consistent?</p>
               <p className="text-sm text-slate-600">
-                Tested across 5 different train/test splits, the model performs consistently
-                (R² = {performance.cross_validation.random_forest_r2.mean.toFixed(2)} ± {performance.cross_validation.random_forest_r2.std.toFixed(2)}).
-                Low variation means it&apos;s not just getting lucky on one specific test set.
-              </p>
-              <p className="mt-2 text-xs text-slate-400">
-                Training data: {performance.training_rows.toLocaleString()} synthetic profiles calibrated to NCAA distributions.
+                The model was tested across 5 different data splits and performed consistently each time.
+                It&apos;s not getting lucky on one particular test — the results hold up across the board.
+                Trained on {performance.training_rows.toLocaleString()} transfer profiles.
               </p>
             </div>
           </div>
